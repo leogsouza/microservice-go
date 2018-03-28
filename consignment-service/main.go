@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net"
 
 	// Import the generated protobuf code
 	pb "github.com/leogsouza/microservice-go/consignment-service/proto/consignment"
-	"golang.golang.org/x/net/context"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -17,18 +17,23 @@ const (
 
 type IRepository interface {
 	Create(*pb.Consignment) (*pb.Consignment, error)
+	GetAll() []*pb.Consignment
 }
 
 // Repository -- Dummy repository, this simulates the use of a datastore
 // of some kind. We'll replace this with a real implementation later on.
 type Repository struct {
-	consingments []*pb.Consignment
+	consignments []*pb.Consignment
 }
 
 func (repo *Repository) Create(consignment *pb.Consignment) (*pb.Consignment, error) {
 	updated := append(repo.consignments, consignment)
 	repo.consignments = updated
 	return consignment, nil
+}
+
+func (repo *Repository) GetAll() []*pb.Consignment {
+	return repo.consignments
 }
 
 // Service should implmenent all of the methods to satisfy the service
@@ -54,12 +59,17 @@ func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment) (*
 	return &pb.Response{Created: true, Consignment: consignment}, nil
 }
 
+func (s *service) GetConsignments(ctx context.Context, req *pb.GetRequest) (*pb.Response, error) {
+	consignments := s.repo.GetAll()
+	return &pb.Response{Consignments: consignments}, nil
+}
+
 func main() {
 
 	repo := &Repository{}
 
 	// Set-up our gRPC server.
-	lis, err := net.listen("tcp", port)
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
