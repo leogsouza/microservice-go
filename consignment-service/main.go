@@ -1,17 +1,12 @@
 package main
 
 import (
-	"log"
-	"net"
+	"fmt"
 
 	// Import the generated protobuf code
 	pb "github.com/leogsouza/microservice-go/consignment-service/proto/consignment"
 	micro "github.com/micro/go-micro"
 	"golang.org/x/net/context"
-)
-
-const (
-	port = ":50051"
 )
 
 type IRepository interface {
@@ -46,21 +41,24 @@ type service struct {
 // CreateConsignment - we created just one method on our service,
 // which is a create metod, which takes a context and a request as an
 // argument, these are handled by the gRPC server.
-func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment) (*pb.Response, error) {
+func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, res *pb.Response) error {
 	// Save our consignment
 	consignment, err := s.repo.Create(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Return matching the 'Response' message we created in our
 	// protobuf definition
-	return &pb.Response{Created: true, Consignment: consignment}, nil
+	res.Created = true
+	res.Consignment = consignment
+	return nil
 }
 
-func (s *service) GetConsignments(ctx context.Context, req *pb.GetRequest) (*pb.Response, error) {
+func (s *service) GetConsignments(ctx context.Context, req *pb.GetRequest, res *pb.Response) error {
 	consignments := s.repo.GetAll()
-	return &pb.Response{Consignments: consignments}, nil
+	res.Consignments = consignments
+	return nil
 }
 
 func main() {
