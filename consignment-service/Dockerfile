@@ -6,7 +6,7 @@
 FROM golang:1.10.0 as builder
 
 # Set our workdir to our current service in the gopath
-WORKDIR /home/leonardo/gopath/src/github.com/leogsouza/microservice-go/consignment-service
+WORKDIR /go/src/github.com/leogsouza/microservice-go/consignment-service
 
 # Copy the current code into our workdir
 COPY . .
@@ -40,7 +40,7 @@ WORKDIR /app
 # we pull the binary from the container named `builder`, within
 # this build context. This reaches into our previous image, finds
 # the binary we built, and pulls it into this container. Amazing!
-COPY --from=builder /home/leonardo/gopath/src/github.com/leogsouza/microservice-go/consignment-service/consignment-service .
+COPY --from=builder /go/src/github.com/leogsouza/microservice-go/consignment-service/consignment-service .
 
 # Run the binary as per usual! This time with a binary build in a
 # separate container, with all of the correct dependencies and
